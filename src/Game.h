@@ -31,6 +31,9 @@ class Game
 
 		//PLAYER
 		GameObject player;
+		float distance_travelled = 0.0;
+		int bends_timer = 0;
+		bool get_bends = false;
 
 		//OXYGEN
 		float oxygen_bar = 1000;
@@ -41,6 +44,7 @@ class Game
 		int player_bubbles = 0;
 		std::vector<std::shared_ptr<GameObject>> vec_bubbles;
 		GameObject bubble;
+		int bubble_speed_multiplier = 0;
 
 
 		/*GAME PLAY FUNCTIONS*/
