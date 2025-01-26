@@ -103,14 +103,45 @@ bool Game::init()
 
     //CREATE PLAYER
 
-    player.initSprite("../Data/Images/player.png");
+    player.initSprite("../Data/Images/diver.png");
     player.getSprite()->setPosition(sf::Vector2f(window.getSize().x/2, window.getSize().y-200));
+    player.sprite_texture_rect = sf::IntRect(player.sprite_rect_pos_x[0], player.sprite_rect_pos_y[0], 120, 150);
+    player.sprite_rect_pos_x[0] = 0;
+    player.sprite_rect_pos_x[1] = 120;
+    player.sprite_rect_pos_x[2] = 240;
+    player.sprite_rect_pos_x[3] = 360;
+    player.sprite_rect_pos_y[0] = 0;
+    player.sprite_rect_pos_y[1] = 150;
+    player.getSprite()->setTextureRect(player.sprite_texture_rect);
+    //player.getSprite()->setScale(1, 1);
 
 
     //CREATE OXYGEN
-    oxygen.setSize(sf::Vector2f(oxygen_bar, 50));
-    oxygen.setPosition(window.getSize().x / 2 - oxygen.getGlobalBounds().width / 2, window.getSize().y - 75);
+    oxygen_tank.setSize(sf::Vector2f(360, 70));
+    oxygen_tank.setPosition(100, 30);
+    if (!oxygen_tank_texture.loadFromFile("../Data/Images/oxygen.png")) {
+        std::cout << "Object texture did not load\n";
+    }
+    oxygen_tank_texture.setRepeated(true);
+    oxygen_tank.setTexture(&oxygen_tank_texture);
+
+
+    oxygen.setSize(sf::Vector2f(oxygen_bar / 4, 70));
+    oxygen.setPosition(oxygen_tank.getPosition().x + 70, 30);
     oxygen.setFillColor(sf::Color::Blue);
+
+    //BENDS
+    bends_indicator.setOutlineThickness(10);
+    bends_indicator.setOutlineColor(sf::Color::Red);
+    bends_indicator.setPosition(10, 10);
+    bends_indicator.setSize(sf::Vector2f(window.getSize().x-20, window.getSize().y-20));
+    bends_indicator.setFillColor(sf::Color::Transparent);
+
+    death_indicator.setOutlineThickness(10);
+    death_indicator.setOutlineColor(sf::Color::Red);
+    death_indicator.setPosition(10, 10);
+    death_indicator.setSize(sf::Vector2f(window.getSize().x - 20, window.getSize().y - 20));
+    death_indicator.setFillColor(sf::Color(225,70,25,100));
 
     return true;
 }
@@ -142,6 +173,11 @@ void Game::update(float dt)
                 player.getSprite()->move(0, -1 * player.speed * dt);
             }
         }
+        else {
+            if (player.getSprite()->getPosition().y < window.getSize().y - 200) {
+                player.getSprite()->move(0, 1 * player.speed * dt);
+            }
+        }
 
         player.getSprite()->move(player.direction * player.speed * dt, 0);
         if (player.getSprite()->getPosition().x < 0) {
@@ -158,16 +194,30 @@ void Game::update(float dt)
         else if (view1.getCenter().y < 140) {
             view1.move(0.f, 0);
             //SURVIVED WIN
+            win = true;
         }
         else {
-            if (get_bends && bends_timer > 30) {
+            if (get_bends && bends_timer > 5) {
                 view1.move(0.f, 0);
                 std::cout << "YOU DIED";
+                game_state = GameState::GAME_LOST;
             }
             else if (player_bubbles > 3) {
                 view1.move(0.f, -1 * bubble_speed_multiplier * dt);
                 distance_travelled += (bubble_speed_multiplier * dt);
-                std::cout << distance_travelled << std::endl;
+                //std::cout << distance_travelled << std::endl;
+                int distance_left = 10000 - distance_travelled;
+                text->distance_travelled.setString(std::to_string(distance_left));
+                text->distance_travelled.setPosition(window.getSize().x - 100 - text->distance_travelled.getGlobalBounds().width, 50);
+
+            }
+            else if (distance_travelled > 0) {
+                view1.move(0.f, 1 * 50 * dt);
+                distance_travelled -= (50 * dt);
+                //std::cout << distance_travelled << std::endl;
+                int distance_left = 10000 - distance_travelled;
+                text->distance_travelled.setString(std::to_string(distance_left));
+                text->distance_travelled.setPosition(window.getSize().x - 100 - text->distance_travelled.getGlobalBounds().width, 50);
             }
         }
 
@@ -176,9 +226,16 @@ void Game::update(float dt)
 
         //BENDS TIMER
   
-        if (bubble_speed_multiplier > 200) {
+        if (bubble_speed_multiplier > 200 && distance_travelled < 10000) {
             get_bends = true;
-            bends_timer++;
+            if (bends_clock.getElapsedTime().asSeconds() > 1)
+            {
+                bends_timer++;
+                int bends_count = 5 - bends_timer;
+                text->bends_countdown.setString(std::to_string(bends_count));
+                bends_clock.restart();
+            }
+            
         }
         else {
             get_bends = false;
@@ -188,10 +245,10 @@ void Game::update(float dt)
 
 
         //UPDATE OXYGEN
-        if (oxygen_timer.getElapsedTime().asSeconds() > 0.1)
+        if (oxygen_timer.getElapsedTime().asSeconds() > 0.1 && distance_travelled < 10000)
         {
             oxygen_bar --;
-            oxygen.setSize(sf::Vector2f(oxygen_bar, 50));
+            oxygen.setSize(sf::Vector2f(oxygen_bar / 4, 70));
             oxygen_timer.restart();
         }
         if (oxygen_bar < 500) {
@@ -201,10 +258,25 @@ void Game::update(float dt)
             oxygen.setFillColor(sf::Color::Red);
         }
 
+        if (oxygen_bar <= 0)
+        {
+            game_state = GameState::GAME_LOST;
+        }
+
         //BUBBLES
+        //float bubble_timer = random_number(1, 3);
+        //bubble_timer = bubble_timer / 100;
+        //spawn the bubbles
+        if (bubble_spawn_timer.getElapsedTime().asSeconds() > 0.2)
+        {
+            bubble_spawn();
+            bubble_spawn_timer.restart();
+        }
+
+
         for (auto& this_bubble : vec_bubbles) {
 
-            this_bubble->getSprite()->move(0, -1 * bubble.speed * dt);
+            this_bubble->getSprite()->move(0, -1 * this_bubble->speed * dt);
 
             if (player.getSprite()->getGlobalBounds().intersects(this_bubble->getSprite()->getGlobalBounds())) {
                 std::cout << "bubble";
@@ -227,9 +299,26 @@ void Game::update(float dt)
         break;
     case GAME_WON:
         std::cout << "This is UPDATE GAME_WON GAMESTATE" << std::endl;
+        //BUBBLES
+        if (bubble_spawn_timer.getElapsedTime().asSeconds() > 0.2)
+        {
+            bubble_spawn();
+            bubble_spawn_timer.restart();
+        }
         break;
     case GAME_LOST:
         std::cout << "This is UPDATE GAME_LOST GAMESTATE" << std::endl;
+        //BUBBLES
+
+        for (auto& this_bubble : vec_bubbles) {
+            this_bubble->getSprite()->move(0, -1 * bubble.speed * dt);
+        }
+
+        if (bubble_spawn_timer.getElapsedTime().asSeconds() > 0.2)
+        {
+            bubble_spawn();
+            bubble_spawn_timer.restart();
+        }
         break;
     }
 }
@@ -253,9 +342,24 @@ void Game::render()
         window.setView(window.getDefaultView());
         window.draw(*player.getSprite());
         window.draw(oxygen);
+        window.draw(oxygen_tank);
+        if (bends_timer > 0) {
+            window.draw(text->bends_countdown_header);
+            window.draw(text->bends_countdown);
+            window.draw(bends_indicator);
+        }
 
         for (auto& this_bubble : vec_bubbles) {
             window.draw(*this_bubble->getSprite());
+        }
+
+        if (distance_travelled < 10000) {
+            window.draw(text->distance_travelled_header);
+            window.draw(text->distance_travelled);
+        }
+        if (win)
+        {
+            window.draw(text->win);
         }
 
         break;
@@ -264,7 +368,24 @@ void Game::render()
         break;
     case GAME_LOST:
         std::cout << "This is RENDER GAME_LOST GAMESTATE" << std::endl;
-        break;
+        window.setView(view1);
+        window.draw(map);
+        window.setView(window.getDefaultView());
+        window.draw(*player.getSprite());
+        window.draw(death_indicator);
+        for (auto& this_bubble : vec_bubbles) {
+            window.draw(*this_bubble->getSprite());
+        }
+        if (oxygen_bar <= 0)
+        {
+            window.draw(text->lose_drown);
+        }
+        if (bends_timer > 5)
+        {
+            window.draw(text->lose_bends);
+        }
+
+       break;
     }
 }
 
@@ -326,23 +447,40 @@ void Game::keyPressed(sf::Event event)
         std::cout << "This is KEYPRESSED INTRO GAMESTATE" << std::endl;
         break;
     case PLAYING:
-        std::cout << "This is KEYPRESSED PLAYING GAMESTATE" << std::endl;
+        //std::cout << "This is KEYPRESSED PLAYING GAMESTATE" << std::endl;
         if (event.key.code == sf::Keyboard::Z)
         {
             player.direction = -1;
+            player.sprite_layer = 1;
+            player.animatePlayer(animation_clock);
+
         }
         if (event.key.code == sf::Keyboard::X)
         {
             player.direction = 1;
+            player.sprite_layer = 0;
+            player.animatePlayer(animation_clock);
+
         }
         if (event.key.code == sf::Keyboard::B)
         {
-            vec_bubbles.push_back(std::make_shared <GameObject> ());
-            vec_bubbles[vec_bubbles.size() - 1]->initSprite("../Data/Images/bubble.png");
-            vec_bubbles[vec_bubbles.size() - 1]->getSprite()->setPosition(sf::Vector2f(200, window.getSize().y - 100));
-            vec_bubbles[vec_bubbles.size() - 1]->speed = 200;
+            bubble_spawn();
         }
-
+        if (event.key.code == sf::Keyboard::Space)
+        {
+            if (distance_travelled < 10000) {
+                if (player_bubbles > 0) {
+                    player_bubbles--;
+                    std::cout << player_bubbles << std::endl;
+                    float position_x = (float)player.getSprite()->getPosition().x + ((float)player.getSprite()->getGlobalBounds().width / 2);
+                    float position_y = (float)player.getSprite()->getPosition().y - 50;
+                    std::cout << position_y;
+                    bubble_release(position_x - 15, position_y);
+                    bubble_release(position_x + 15, position_y);
+                    bubble_release(position_x, position_y);
+                }
+            }
+        }
         break;
     case GAME_WON:
         std::cout << "This is KEYPRESSED GAME_WON GAMESTATE" << std::endl;
@@ -364,7 +502,7 @@ void Game::keyReleased(sf::Event event)
         std::cout << "This is KEYRELEASED INTRO GAMESTATE" << std::endl;
         break;
     case PLAYING:
-        std::cout << "This is KEYRELEASED PLAYING GAMESTATE" << std::endl;
+        //std::cout << "This is KEYRELEASED PLAYING GAMESTATE" << std::endl;
         if (event.key.code == sf::Keyboard::Z)
         {
             player.direction = 0;
@@ -404,5 +542,38 @@ void Game::mouseEntered(sf::Event event)
         break;
     }
 }
+
+int Game::random_number(int min, int max)
+{
+    return rand() % max + min;
+}
+
+void Game::bubble_spawn()
+{
+    vec_bubbles.push_back(std::make_shared <GameObject>());
+    vec_bubbles[vec_bubbles.size() - 1]->initSprite("../Data/Images/bubble.png");
+    float position_x = random_number(50, window.getSize().x - 100);
+    vec_bubbles[vec_bubbles.size() - 1]->getSprite()->setPosition(sf::Vector2f(position_x, window.getSize().y - 100));
+    float scale = random_number(1, 50);
+    scale = scale / 100;
+    vec_bubbles[vec_bubbles.size() - 1]->getSprite()->setScale(scale, scale);
+    float speed = random_number(200, 250);
+    vec_bubbles[vec_bubbles.size() - 1]->speed = speed;
+}
+
+void Game::bubble_release(float position_x, float position_y)
+{
+    std::cout << position_y;
+    vec_bubbles.push_back(std::make_shared <GameObject>());
+    vec_bubbles[vec_bubbles.size() - 1]->initSprite("../Data/Images/bubble.png");
+    vec_bubbles[vec_bubbles.size() - 1]->getSprite()->setPosition(sf::Vector2f(position_x, position_y));
+    float scale = random_number(1, 50);
+    scale = scale / 100;
+    vec_bubbles[vec_bubbles.size() - 1]->getSprite()->setScale(scale, scale);
+
+    float speed = random_number(300, 450);
+    vec_bubbles[vec_bubbles.size() - 1]->speed = speed;
+}
+
 
 

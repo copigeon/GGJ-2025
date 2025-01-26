@@ -18,12 +18,10 @@ public:
 
 	//GETTERS SETTERS
 
-	std::string getName();
-	void setName(std::string string);
 	std::shared_ptr<sf::Sprite>& getSprite();
 	std::unique_ptr<sf::Vector2f>& getPosition();
 	void setPosition(sf::Vector2f vector);
-
+	void animatePlayer(sf::Clock& animation_clock);
 
 	//FUNCTIONS
 
@@ -34,6 +32,7 @@ public:
 	int sprite_rect_pos_y[2];
 	int frame = 0;
 	int z_order = 0;
+	int sprite_layer = 0;
 
 	Status status = Status::INITIAL;
 
@@ -48,6 +47,5 @@ private:
 	std::shared_ptr<sf::Sprite> sprite;
 	std::unique_ptr<sf::Vector2f> position;
 	std::shared_ptr<sf::Texture> texture;
-	std::string name;
 
 };

@@ -42,11 +42,22 @@ bool GameObject::initSprite(std::string file_name)
 	return true;
 }
 
-std::string GameObject::getName()
+
+void GameObject::animatePlayer(sf::Clock& animation_clock)
 {
-	return name;
-}
-void GameObject::setName(std::string string)
-{
-	name = string;
+	if (animation_clock.getElapsedTime().asSeconds() > 0.08)
+	{
+		sprite_texture_rect = sf::IntRect(
+			sprite_rect_pos_x[frame], sprite_rect_pos_y[sprite_layer], 120, 150);
+		getSprite()->setTextureRect(sprite_texture_rect);
+		if (frame < 4)
+		{
+			frame++;
+		}
+		else
+		{
+			frame = 0;
+		}
+		animation_clock.restart();
+	}
 }

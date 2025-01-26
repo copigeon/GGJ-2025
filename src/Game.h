@@ -21,6 +21,9 @@ class Game
 		void keyPressed(sf::Event event);
 		void keyReleased(sf::Event event);
 		void mouseEntered(sf::Event event);
+		int random_number(int min, int max);
+		void bubble_spawn();
+		void bubble_release(float position_x, float position_y);
 
 		/*INITS*/
 		TileMap map;
@@ -30,13 +33,17 @@ class Game
 		int view_counter = 0;
 
 		//PLAYER
+		sf::Clock animation_clock;
 		GameObject player;
 		float distance_travelled = 0.0;
 		int bends_timer = 0;
+		sf::Clock bends_clock;
 		bool get_bends = false;
 
 		//OXYGEN
 		float oxygen_bar = 1000;
+		sf::RectangleShape oxygen_tank;
+		sf::Texture oxygen_tank_texture;
 		sf::RectangleShape oxygen;
 		sf::Clock oxygen_timer;
 
@@ -45,9 +52,17 @@ class Game
 		std::vector<std::shared_ptr<GameObject>> vec_bubbles;
 		GameObject bubble;
 		int bubble_speed_multiplier = 0;
+		sf::Clock bubble_spawn_timer;
+
+		//BENDS
+		sf::RectangleShape bends_indicator;
+		sf::RectangleShape death_indicator;
+
 
 
 		/*GAME PLAY FUNCTIONS*/
+
+		bool win = false;
 
 	private:
 		sf::RenderWindow& window;
