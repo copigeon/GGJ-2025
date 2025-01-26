@@ -167,7 +167,9 @@ void Game::update(float dt)
 
         //MOVE THE PLAYER
 
-        //START MOVEMENT
+        //START MOVEMEN
+
+
         if (player_bubbles > 3) {
             if (player.getSprite()->getPosition().y > window.getSize().y / 2 - (player.getSprite()->getGlobalBounds().height / 2)) {
                 player.getSprite()->move(0, -1 * player.speed * dt);
@@ -329,7 +331,28 @@ void Game::render()
     {
 
     case MENU:
-        std::cout << "This is RENDER MENU GAMESTATE" << std::endl;
+        //std::cout << "This is RENDER MENU GAMESTATE" << std::endl;
+        window.setView(view1);
+        window.draw(map);
+        window.setView(window.getDefaultView());
+        window.draw(*player.getSprite());
+        window.draw(oxygen);
+        window.draw(oxygen_tank);
+
+
+        for (auto& this_bubble : vec_bubbles) {
+            window.draw(*this_bubble->getSprite());
+        }
+
+        window.draw(text->start);
+        window.draw(text->start_1);
+        window.draw(text->start_1a);
+        window.draw(text->start_1b);
+
+        window.draw(text->start_2);
+
+
+
         break;
     case INTRO:
         std::cout << "This is RENDER PLAYING GAMESTATE" << std::endl;
@@ -464,7 +487,8 @@ void Game::keyPressed(sf::Event event)
         }
         if (event.key.code == sf::Keyboard::B)
         {
-            bubble_spawn();
+            std::cout << "play audio";
+            audio->bubble_sound.play();
         }
         if (event.key.code == sf::Keyboard::Space)
         {
@@ -481,6 +505,7 @@ void Game::keyPressed(sf::Event event)
                 }
             }
         }
+
         break;
     case GAME_WON:
         std::cout << "This is KEYPRESSED GAME_WON GAMESTATE" << std::endl;
@@ -497,6 +522,10 @@ void Game::keyReleased(sf::Event event)
     {
     case MENU:
         std::cout << "This is KEYRELEASED MENU GAMESTATE" << std::endl;
+        if (event.key.code == sf::Keyboard::Space)
+        {
+            game_state = GameState::PLAYING;
+        }
         break;
     case INTRO:
         std::cout << "This is KEYRELEASED INTRO GAMESTATE" << std::endl;
@@ -559,6 +588,13 @@ void Game::bubble_spawn()
     vec_bubbles[vec_bubbles.size() - 1]->getSprite()->setScale(scale, scale);
     float speed = random_number(200, 250);
     vec_bubbles[vec_bubbles.size() - 1]->speed = speed;
+    float bubble_rand = random_number(10, 500);
+    bubble_rand = bubble_rand / 100;
+    if (bubble_audio_timer.getElapsedTime().asSeconds() > bubble_rand && audio->bubble_sound.getStatus() != sf::Sound::Status::Playing)
+    {
+        audio->bubble_sound.play();
+        bubble_audio_timer.restart();
+    }
 }
 
 void Game::bubble_release(float position_x, float position_y)
@@ -573,6 +609,9 @@ void Game::bubble_release(float position_x, float position_y)
 
     float speed = random_number(300, 450);
     vec_bubbles[vec_bubbles.size() - 1]->speed = speed;
+
+        audio->release_sound.play();
+
 }
 
 

@@ -26,6 +26,13 @@ public:
 	sf::Text win;
 	sf::Text lose_drown;
 	sf::Text lose_bends;
+	sf::Text start;
+	sf::Text start_1;
+	sf::Text start_1a;
+	sf::Text start_1b;
+
+	sf::Text start_2;
+
 
 
 private:

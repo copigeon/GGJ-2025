@@ -58,7 +58,7 @@ class Game
 		sf::RectangleShape bends_indicator;
 		sf::RectangleShape death_indicator;
 
-
+		sf::Clock bubble_audio_timer;
 
 		/*GAME PLAY FUNCTIONS*/
 
@@ -66,7 +66,7 @@ class Game
 
 	private:
 		sf::RenderWindow& window;
-		GameState game_state = GameState::PLAYING;
+		GameState game_state = GameState::MENU;
 
 		//TEXT OBJECT STORES ALL TEXT ELEMENTS
 		std::unique_ptr<Text> text;

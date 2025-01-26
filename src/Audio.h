@@ -12,8 +12,11 @@ public:
 	Audio();
 	~Audio();
 	// COM BADGE
-	sf::SoundBuffer com_badge_buffer;
-	sf::Sound com_badge_sound;
+	sf::SoundBuffer bubble_buffer;
+	sf::Sound bubble_sound;
+
+	sf::SoundBuffer release_buffer;
+	sf::Sound release_sound;
 
 private:
 

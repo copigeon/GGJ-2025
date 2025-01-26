@@ -9,7 +9,54 @@ Text::Text(sf::RenderWindow& window) {
         if (!title_font_big.loadFromFile("../Data/Fonts/open-sans/OpenSans-ExtraBold.ttf")) { std::cout << "title_font did not load1 \n"; }
 
         // MENU
-        title.setString("");
+
+        start.setString("Get to the Surface!");
+        start.setFont(title_font_big);
+        start.setLetterSpacing(2);
+        start.setCharacterSize(35);
+        //title.setOutlineThickness(1);
+        //title.setOutlineColor(sf::Color::Green);
+        start.setFillColor((sf::Color::Magenta));
+        start.setPosition(window.getSize().x / 2 - (start.getGlobalBounds().width / 2), 150);
+
+        start_1a.setString("Collect the bubbles to float up!");
+        start_1a.setFont(title_font_big);
+        start_1a.setLetterSpacing(2);
+        start_1a.setCharacterSize(20);
+        //title.setOutlineThickness(1);
+        //title.setOutlineColor(sf::Color::Green);
+        start_1a.setFillColor((sf::Color::Magenta));
+        start_1a.setPosition(window.getSize().x / 2 - (start_1a.getGlobalBounds().width / 2), 200);
+
+        start_1b.setString("Release the bubbles to drift down!");
+        start_1b.setFont(title_font_big);
+        start_1b.setLetterSpacing(2);
+        start_1b.setCharacterSize(20);
+        //title.setOutlineThickness(1);
+        //title.setOutlineColor(sf::Color::Green);
+        start_1b.setFillColor((sf::Color::Magenta));
+        start_1b.setPosition(window.getSize().x / 2 - (start_1b.getGlobalBounds().width / 2), 225);
+
+        start_1.setString("w = left / x = right / space = release bubbles!");
+        start_1.setFont(title_font_big);
+        start_1.setLetterSpacing(2);
+        start_1.setCharacterSize(25);
+        //title.setOutlineThickness(1);
+        //title.setOutlineColor(sf::Color::Green);
+        start_1.setFillColor((sf::Color::Magenta));
+        start_1.setPosition(window.getSize().x / 2 - (start_1.getGlobalBounds().width / 2), 250);
+
+        start_2.setString("PRESS SPACE TO START");
+        start_2.setFont(title_font_big);
+        start_2.setLetterSpacing(2);
+        start_2.setCharacterSize(35);
+        //title.setOutlineThickness(1);
+        //title.setOutlineColor(sf::Color::Green);
+        start_2.setFillColor((sf::Color::Magenta));
+        start_2.setPosition(window.getSize().x / 2 - (start_2.getGlobalBounds().width / 2), 300);
+
+
+        title.setString("Get to ");
         title.setFont(title_font);
         title.setLetterSpacing(2);
         title.setCharacterSize(35);
